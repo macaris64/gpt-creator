@@ -131,3 +131,6 @@ dist
 
 # Editors
 .idea
+
+# Database files
+postgres_data/
