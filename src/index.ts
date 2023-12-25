@@ -9,7 +9,7 @@ import {initGptModel} from "./models/gpt.model";
 initGptModel(sequelize);
 
 const app = express();
-const port = 3000; // You can choose any port
+const port = 3008; // You can choose any port
 
 dotenv.config();
 app.use(express.json());

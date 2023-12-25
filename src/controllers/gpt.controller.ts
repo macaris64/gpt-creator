@@ -1,26 +1,39 @@
 import {NextFunction, Request, Response} from 'express';
 
+import GptInstanceManager from "../managers/gpt";
+import {APIError} from "../utils/errors";
+
 export const createGpt = async (req: Request, res: Response, next: NextFunction) => {
-    // Placeholder for GPT creation logic
-    res.send('GPT creation endpoint');
+    try {
+        const gptManager = new GptInstanceManager();
+        const {name, systemMessage} = req.body;
+        if (!name || !systemMessage) {
+            throw new APIError(400, "Missing required parameters");
+        }
+        let existingGptInstance = await gptManager.getGPTInstanceByName(name);
+        if (existingGptInstance) {
+            throw new APIError(400, "GPT instance with this name already exists");
+        }
+        let gptInstance = await gptManager.createGPTInstance(name, systemMessage);
+
+        await gptManager.sendMessageToGpt(gptInstance.id, "Hello");
+        res.status(200).json({gptInstance: gptInstance});
+    } catch (e) {
+        console.log(e)
+        next(e);
+    }
 }
 
-export const updateGpt = async (req: Request, res: Response, next: NextFunction) => {
-    // Placeholder for GPT update logic
-    res.send('GPT update endpoint');
-}
-
-export const getGptById = async (req: Request, res: Response, next: NextFunction) => {
-    // Placeholder for GPT get by id logic
-    res.send('GPT get by id endpoint');
-}
-
-export const getAllGpts = async (req: Request, res: Response, next: NextFunction) => {
-    // Placeholder for GPT get all logic
-    res.send('GPT get all endpoint');
-}
-
-export const deleteGpt = async (req: Request, res: Response, next: NextFunction) => {
-    // Placeholder for GPT delete logic
-    res.send('GPT delete endpoint');
+export const send = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const gptManager = new GptInstanceManager();
+        const {id, message} = req.body;
+        if (!id || !message) {
+            throw new APIError(400, "Missing required parameters");
+        }
+        const response = await gptManager.sendMessageToGpt(parseInt(id), message);
+        res.status(200).json({message: response});
+    } catch (e) {
+        next(e);
+    }
 }
